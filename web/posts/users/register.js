@@ -1,4 +1,5 @@
 const zkp = require("../../../zkp/main");
+const Users = require('../../../users/main')
 
 module.exports = async function (req, res) {
 
@@ -29,7 +30,26 @@ module.exports = async function (req, res) {
         return;
     }
 
+    // check username us alphanumeric
+    if(!/^[a-zA-Z0-9]+$/.test(body.username)) {
+        res.status(400).send({
+            error: "Username must be alphanumeric"
+        });
+        return;
+    }
+
+    // check if the username is already taken
+    if(Users.getUser(body.username)) {
+        res.status(400).send({
+            error: "Username already taken"
+        });
+        return;
+    }
+
+    Users.registerUser(body.username, body.password);
+
     res.send({
-        success: true
+        success: true,
+        message: `User ${body.username} registered successfully!`
     })
 }
