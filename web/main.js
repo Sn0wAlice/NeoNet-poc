@@ -6,6 +6,7 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const logger = require('../utils/logger');
+const authenticate = require('./authenticate');
 
 app.use(express.json());
 const routes = [];
@@ -34,11 +35,20 @@ module.exports = {
             }
         });
 
-        app.post('/amnesia/*', (req, res) => {
+        app.post('/amnesia/*', async (req, res) => {
             logger.logs(`Request from ${req.ip} to ${req.path}`);
 
             const route = posts.find(route => route.path === req.path);
             if (route) {
+                if(req.path != "/amnesia/users/register") {
+                    // authenticate user
+                    const user = await authenticate(req, res);
+                    if(!user) {
+                        return;
+                    }
+                    route.file(req, res, user);
+                    return
+                } 
                 route.file(req, res);
             } else {
                 res.status(404).send({
@@ -67,7 +77,7 @@ module.exports = {
             } else {
                 fileList.push(path + '/' + file);
                 (get ? routes : posts).push({
-                    path: path.replace("./web/", "/").replace("/routes/", "/amnesia/").replace("/posts/", "/amnesia/") + '/' + file.replace(".js", ""),
+                    path: path.replace("./web/", "/").replace("/routes/", "/amnesia/").replace("/posts", "/amnesia") + '/' + file.replace(".js", ""),
                     file: require(path.replace("/web/", "/") + '/' + file)
                 });
             }

@@ -45,6 +45,18 @@ class ZKP {
         return false
     }
 
+    // User authentication space
+    userAuth(proof, userinfo) {
+        const tmpCommitment = crypto.createHash('sha256').update(mystery.key+"-"+userinfo.password+"-"+proof.timestamp).digest('hex');
+        if(this.verifyMembershipProof(proof.proof, tmpCommitment, proof.pk)) {
+            return true;
+        }
+        return false;
+    }
+
+    genKeyPair() {
+        return ec.genKeyPair();
+    }
 
     // Function to generate a proof of knowledge of group membership
     generateMembershipProof(publicKey, groupCommitment) {
