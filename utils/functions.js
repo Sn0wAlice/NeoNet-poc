@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = class Functions {
     generateRandomString(length) {
         let result = '';
         let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -7,5 +7,9 @@ module.exports = {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
+    }
+
+    generateUID() {
+        return `${this.generateRandomString(8)}-${this.generateRandomString(4)}-${this.generateRandomString(4)}-${this.generateRandomString(4)}-${this.generateRandomString(12)}`;
     }
 }

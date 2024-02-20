@@ -9,6 +9,7 @@ const logger = require('../utils/logger');
 
 app.use(express.json());
 const routes = [];
+const posts = [];
 
 module.exports = {
     start: function (port) {
@@ -32,12 +33,27 @@ module.exports = {
                 });
             }
         });
+
+        app.post('/amnesia/*', (req, res) => {
+            logger.logs(`Request from ${req.ip} to ${req.path}`);
+
+            const route = posts.find(route => route.path === req.path);
+            if (route) {
+                route.file(req, res);
+            } else {
+                res.status(404).send({
+                    error: "Not found"
+                });
+            }
+        });
     },
-    loadRoutes: function (path) {
-        this.readDirSync(path);
+    loadRoutes: function () {
+        this.readDirSync('./web/routes', true);
         logger.logs(`Loaded ${routes.length} web routes`);
+        this.readDirSync("./web/posts", false);
+        logger.logs(`Loaded ${posts.length} web posts`);
     },
-    readDirSync(path) {
+    readDirSync(path, get=true) {
         const fileList = [];
         const folders = [];
         const files = fs.readdirSync(path);
@@ -46,12 +62,12 @@ module.exports = {
             if (fs.statSync(path + '/' + file).isDirectory()) {
                 folders.push({
                     folder: file,
-                    files: this.readDirSync(path + '/' + file)
+                    files: this.readDirSync(path + '/' + file, get)
                 });   
             } else {
                 fileList.push(path + '/' + file);
-                routes.push({
-                    path: path.replace("./web/", "/").replace("/routes/", "/amnesia/") + '/' + file.replace(".js", ""),
+                (get ? routes : posts).push({
+                    path: path.replace("./web/", "/").replace("/routes/", "/amnesia/").replace("/posts/", "/amnesia/") + '/' + file.replace(".js", ""),
                     file: require(path.replace("/web/", "/") + '/' + file)
                 });
             }

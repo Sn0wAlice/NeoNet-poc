@@ -6,13 +6,14 @@ const fs = require('fs');
 const logger = require('./utils/logger');
 const web = require('./web/main');
 const Peers = require('./peers/main')
+const ZKP = require('./zkp/main')
 
 console.log(fs.readFileSync('./utils/ascii.art', 'utf8'))
 
 const config = require(process.argv.includes('--config') ? process.argv[process.argv.indexOf('--config')+1] : "./config.json")
 
 async function main() {
-    await web.loadRoutes('./web/routes');
+    await web.loadRoutes();
 
     // Start the web service
     await web.route();
@@ -35,11 +36,15 @@ async function main() {
 
     logger.logs(`Your node is up and running!`);
 
-    Peers.listPeers();
     for(const p of config.peers.friends) {
         await Peers.checkPeersAvailability(p);
     }
-    Peers.listPeers();
+
+    if(process.argv.includes('--zkp-proof')) {
+        // generate a valid proof
+        logger.logs("Generating a valid proof of membership...");
+        logger.logs(`Proof: ${btoa(JSON.stringify(ZKP.generateValidProof()))}`);
+    }
 }
 
 
