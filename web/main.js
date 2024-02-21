@@ -40,7 +40,7 @@ module.exports = {
 
             const route = posts.find(route => route.path === req.path);
             if (route) {
-                if(req.path != "/amnesia/users/register") {
+                if(req.path != "/amnesia/users/register" && req.path != "/amnesia/data") {
                     // authenticate user
                     const user = await authenticate(req, res);
                     if(!user) {

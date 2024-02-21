@@ -18,6 +18,19 @@ class Peers {
         console.log(database),
         logger.debug("-- End of the list")
     }
+
+    async sendData(hostname, data) {
+        logger.logs(`Sending data to ${hostname}`)
+        try {
+            const req = await fetch(hostname+"/amnesia/data", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+        } catch(err) {}
+    }
   
     async checkPeersAvailability(hostname) {
         logger.debug(`Check if peers ${hostname} is up`)

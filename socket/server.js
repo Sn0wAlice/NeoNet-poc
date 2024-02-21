@@ -6,8 +6,16 @@ const logger = require('../utils/logger');
 
 const mods = [];
 
-module.exports = {
-    start: function(port) {
+class Socket {
+    constructor() {
+        if (!Socket.instance) {
+            Socket.instance = this;
+        }
+    
+        return Socket.instance;
+    }
+
+    start(port) {
 
         // read the mods
         const files = fs.readdirSync("./socket/mods");
@@ -53,4 +61,16 @@ module.exports = {
         io.listen(port);
     }
 
+    getSocketByUser(username) {
+        for (const [key, client] of io.sockets.sockets.entries()) {
+            if (client.auth.username === username) {
+                return client;
+            }
+        }
+        return null;
+    }
+
 }
+
+
+module.exports = new Socket();
