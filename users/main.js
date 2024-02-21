@@ -28,7 +28,6 @@ class Users {
             "username": username,
             "password": password
         })
-        console.log(database)
     }
 
     getUser(username) {

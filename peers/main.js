@@ -32,9 +32,7 @@ class Peers {
                 })
                 return true
             }
-        } catch(err) {
-            console.log(err)
-        }
+        } catch(err) {}
         logger.debug(`peers ${hostname} is down`)
         return false
     }

@@ -5,6 +5,7 @@
 const fs = require('fs');
 const logger = require('./utils/logger');
 const web = require('./web/main');
+const socket = require('./socket/server');
 const Peers = require('./peers/main')
 const ZKP = require('./zkp/main')
 
@@ -45,6 +46,11 @@ async function main() {
         logger.logs("Generating a valid proof of membership...");
         logger.logs(`Proof: ${btoa(JSON.stringify(ZKP.generateValidProof()))}`);
     }
+
+    // start the socket server
+    logger.logs(`Starting the socket server on port ${config.socket.port}...`);
+    socket.start(config.socket.port);
+    
 }
 
 

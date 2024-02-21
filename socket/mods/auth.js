@@ -1,26 +1,30 @@
-const ZKP = require('../zkp/main');
-const Users = require('../users/main');
+const ZKP = require('../../zkp/main');
+const Users = require('../../users/main');
 
 
-module.exports = async function (req, res) { 
+module.exports = async function (socket, data) {
+    
+    // check if the user is authenticated
+    if(socket.auth) {
+        socket.emit('neonet', {error: "You are already authenticated"});
+        return;
+    }
 
     // get the authentication header
-    const authHeader = req.headers.authorization;
-    if(!authHeader) {
-        res.status(401).send({
+    const proof = data.auth;
+    if(!proof) {
+        socket.emit('neonet', {
             error: "Missing authorization header"
         });
         return;
     }
 
-    // check the proof
-    const proof = authHeader.replace("Zkpo ", "");
     try {
         const jsonproof = JSON.parse(atob(proof));
         
         // check the proof contain: username, timestamp, proof
         if(!jsonproof.username || !jsonproof.timestamp || !jsonproof.proof || !jsonproof.pk) {
-            res.status(401).send({
+            socket.emit('neonet', {
                 error: "Invalid authorization header"
             });
             return;
@@ -29,7 +33,7 @@ module.exports = async function (req, res) {
         // get user by username
         const user = Users.getUser(jsonproof.username);
         if(!user) {
-            res.status(401).send({
+            socket.emit('neonet', {
                 error: "Invalid username"
             });
             return;
@@ -37,7 +41,7 @@ module.exports = async function (req, res) {
 
         // check timestamp is not expired (1 minute)
         if(Date.now() - jsonproof.timestamp > 60000) {
-            res.status(401).send({
+            socket.emit('neonet', {
                 error: "Expired timestamp"
             });
             return;
@@ -47,21 +51,24 @@ module.exports = async function (req, res) {
         const valid = ZKP.userAuth(jsonproof, user);
         
         if(!valid) {
-            res.status(401).send({
+            socket.emit('neonet', {
                 error: "Invalid proof"
             });
             return;
         }
 
-        return user
-
-    } catch (error) {
-        res.status(401).send({
-            error: "Missing authorization header"
+        // set the user as authenticated
+        socket.auth = {
+            username: user.username,
+        }
+        socket.emit('neonet', {
+            success: "You are authenticated"
         });
         return;
+    } catch (error) {
+        console.log(error)
     }
-
-
-    return {"username":"admin","password":"admin1234","role":"admin"}
+    socket.emit('neonet', {
+        error: "Invalid authorization header"
+    });
 }
