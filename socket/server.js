@@ -6,6 +6,10 @@ const logger = require('../utils/logger');
 
 const mods = [];
 
+/**
+ * This is the socket server
+ * act like a singleton for the shared resources
+ */
 class Socket {
     constructor() {
         if (!Socket.instance) {
@@ -16,7 +20,6 @@ class Socket {
     }
 
     start(port) {
-
         // read the mods
         const files = fs.readdirSync("./socket/mods");
         files.forEach(file => {

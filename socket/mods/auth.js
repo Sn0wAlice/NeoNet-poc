@@ -1,7 +1,11 @@
 const ZKP = require('../../zkp/main');
 const Users = require('../../users/main');
 
-
+/**
+ * This socket module is used to authenticate the user
+ * @param {*} socket the socket object
+ * @param {*} data the data sent by the client
+ */
 module.exports = async function (socket, data) {
     
     // check if the user is authenticated
@@ -19,7 +23,7 @@ module.exports = async function (socket, data) {
         return;
     }
 
-    try {
+    try { // try, wrong proof may produce error...
         const jsonproof = JSON.parse(atob(proof));
         
         // check the proof contain: username, timestamp, proof
@@ -57,11 +61,12 @@ module.exports = async function (socket, data) {
             return;
         }
 
-        // set the user as authenticated
+        // set the user as authenticated directly in the socket
         socket.auth = {
             username: user.username,
         }
-        socket.emit('neonet', {
+        // tell to the client that his authentication is successful
+        socket.emit('neonet', { 
             success: "You are authenticated"
         });
         return;
