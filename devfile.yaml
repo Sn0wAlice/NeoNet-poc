@@ -1,0 +1,51 @@
+schemaVersion: 2.2.0
+metadata:
+  name: neonet
+  language: nodejs
+  version: 1.0.0
+
+projects:
+  - name: neonet
+    git:
+      remotes:
+        origin: https://github.com/Sn0wAlice/NeoNet.git
+
+components:
+  - name: tools
+    container:
+      image: harbor.weebo.fr/batleforc/che-node:latest
+      memoryLimit: 8Gi
+      command: ["tail"]
+      args: ["-f", "/dev/null"]
+      mountSources: true
+      env:
+        - name: RUST_ENV
+          value: "dev-che"
+      endpoints:
+        - name: 16667-http
+          targetPort: 16667
+          exposure: public
+          protocol: http
+        - name: 16668-ws
+          targetPort: 16668
+          exposure: public
+          protocol: ws
+
+commands:
+  - id: build
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: echo "JOSEPH JOESTAR"
+      group:
+        kind: build
+        isDefault: true
+
+  - id: run
+    exec:
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: echo "SPONGE BOB"
+      group:
+        kind: run
+        isDefault: true

@@ -4,9 +4,6 @@
     "web": {
         "port": 16667
     },
-    "socket": {
-        "port": 16668
-    },
     "peers": {
         "friends": [
             "http://127.0.0.1:26667"
@@ -15,7 +12,7 @@
     "remote": {
         "socket": {
             "hostname": "http://localhost",
-            "port": 16668
+            "port": 16667
         }
     }
 }
