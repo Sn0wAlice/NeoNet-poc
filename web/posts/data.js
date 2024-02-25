@@ -8,7 +8,11 @@ module.exports = async function (req, res) {
   console.log(data);
 
   // check if the data contain: to, from, data
-  if (!data.to || !data.from || !data.data) {
+  if (
+    !data.to ||
+    !data.from ||
+    (!data.data && (!data.rsa || data.type != "rsa"))
+  ) {
     res.status(400).send({ error: "Invalid data" });
     return;
   }
@@ -17,6 +21,13 @@ module.exports = async function (req, res) {
   const s = socket.getSocketByUser(data.to.split("@")[0]);
   if (!socket) {
     res.status(400).send({ error: "User not found" });
+    return;
+  }
+  if (data.type == "rsa") {
+    s.emit("neonet_rsa", {
+      from: data.from,
+      rsa: data.rsa,
+    });
     return;
   }
 

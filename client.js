@@ -2,6 +2,7 @@ const io = require("socket.io-client");
 const fs = require("fs");
 const { generateProof } = require("./utils/clientfunctions");
 const { createInterface, clearLine, moveCursor } = require("readline");
+const registreRsa = require("./rsa/main");
 
 const interface = createInterface(process.stdin, process.stdout);
 
@@ -51,6 +52,24 @@ socket.on("neonet_data", function (data) {
   output(`${data.from}: ${data.data}`);
 });
 
+// Event listener for when the rsa is given
+socket.on("neonet_rsa", function (data) {
+  if (!data.from || !data.rsa) return;
+  registreRsa.addRsa(data.from, data.rsa);
+  // if i asked for the rsa key, remove it from the list
+  if (registreRsa.isAskedRsa(data.from)) {
+    registreRsa.removeAskedRsa(data.from);
+  } else {
+    // if not i should send my rsa key
+    socket.emit("neonet", {
+      mod: "rsa",
+      rsa: registreRsa.getPulicKey(),
+      to: data.from,
+    });
+  };
+  output(`RSA key from ${data.from} added; you can now send data to this user`);
+});
+
 async function main() {
   init();
   for await (const input of inputs()) {
@@ -66,6 +85,19 @@ async function main() {
         to: args[1],
         data: args.slice(2).join(" "),
       });
+    } else if (args[0] === "connect") {
+      if (registreRsa.getListUser().includes(args[1])) {
+        output("You are already connected to this user");
+        continue;
+      }
+      registreRsa.addAskedRsa(args[1]);
+      socket.emit("neonet", {
+        mod: "rsa",
+        rsa: registreRsa.getPulicKey(),
+        to: args[1],
+      });
+    } else if (args[0] === "list_user") {
+      output(registreRsa.getListUser());
     } else if (args[0] === "exit") {
       process.exit();
     }
