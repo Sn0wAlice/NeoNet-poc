@@ -8,7 +8,7 @@ class RegistreRsa {
     if (!RegistreRsa.instance) {
       RegistreRsa.instance = this;
     }
-    const { privateKey, publicKey } = nodeRSA.createPrivateAndPublicKeys();
+    const { privateKey, publicKey } = encryptRsa.createPrivateAndPublicKeys();
     this.privateKey = privateKey;
     this.publicKey = publicKey;
     return RegistreRsa.instance;
