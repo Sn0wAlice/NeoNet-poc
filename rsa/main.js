@@ -32,3 +32,5 @@ class RegistreRsa {
     return encryptRsa.encryptStringWithRsaPublicKey(data, registreRsa[id]);
   }
 }
+
+module.exports = new RegistreRsa();
