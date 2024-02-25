@@ -25,7 +25,7 @@ module.exports = async function (socket, data, io) {
     await localDataTransfer(socket, data, io);
     return;
   }
-
+  let found = false;
   for (const [key, client] of io.sockets.sockets.entries()) {
     if (client.auth.username === data.to) {
       logger.logs(`sending data to ${data.to}`);
@@ -33,8 +33,21 @@ module.exports = async function (socket, data, io) {
         from: socket.auth.username,
         data: data.data,
       });
+      socket.emit("neonet", {
+        from: socket.auth.username,
+        to: data.to,
+        status: "sent",
+      });
+      found = true;
       break;
     }
+  }
+  if (!found) {
+    socket.emit("neonet", {
+      from: socket.auth.username,
+      to: data.to,
+      status: "error: user not found",
+    });
   }
 };
 
@@ -48,12 +61,26 @@ async function localDataTransfer(socket, data, io) {
   const available = await Peers.checkPeersAvailability("http://" + remote);
   if (available) {
     // send the data to the remote server
-    const response = await Peers.sendData("http://" + remote, {
+    await Peers.sendData("http://" + remote, {
       from: socket.auth.username + "@" + config.name,
       to: data.to,
       data: data.data,
-    });
-    console.log(response); // debug the response for the moment, delete this later
+    })
+      .then((response) => {
+        socket.emit("neonet", {
+          from: socket.auth.username,
+          to: data.to,
+          status: "sent",
+        });
+        console.log(response); // debug the response for the moment, delete this later
+      })
+      .catch((err) => {
+        socket.emit("neonet", {
+          from: socket.auth.username,
+          to: data.to,
+          status: `error: ${err.data}`,
+        });
+      });
   }
 
   return;
