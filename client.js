@@ -55,6 +55,7 @@ socket.on("neonet_data", function (data) {
 // Event listener for when the rsa is given
 socket.on("neonet_rsa", function (data) {
   if (!data.from || !data.rsa) return;
+
   registreRsa.addRsa(data.from, data.rsa);
   // if i asked for the rsa key, remove it from the list
   if (registreRsa.isAskedRsa(data.from)) {
@@ -66,8 +67,18 @@ socket.on("neonet_rsa", function (data) {
       rsa: registreRsa.getPulicKey(),
       to: data.from,
     });
-  };
+  }
   output(`RSA key from ${data.from} added; you can now send data to this user`);
+});
+
+socket.on("neonet_encrypted", function (data) {
+  if (!data.from || !data.data) return;
+  var [isOk, translated] = registreRsa.unCypher(data.data);
+  if (isOk) {
+    output(`[SECRET] ${data.from}: ${translated}`);
+  } else {
+    output(`Couldn't translate message from ${data.from}`);
+  }
 });
 
 async function main() {
@@ -84,6 +95,19 @@ async function main() {
         mod: "data",
         to: args[1],
         data: args.slice(2).join(" "),
+      });
+    } else if (args[0] === "send_secure") {
+      if (!registreRsa.hasKey(args[1])) {
+        output(
+          `Can't send message to ${args[1]} please try to connect with it first (ex: connect ${args[1]})`
+        );
+        continue;
+      }
+      socket.emit("neonet", {
+        mod: "data",
+        to: args[1],
+        data: registreRsa.cypher(args[1], args.slice(2).join(" ")),
+        type: "encrypted"
       });
     } else if (args[0] === "connect") {
       if (registreRsa.getListUser().includes(args[1])) {

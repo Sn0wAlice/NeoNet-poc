@@ -51,7 +51,7 @@ async function localDataTransfer(socket, data, io) {
     const response = await Peers.sendData("http://" + remote, {
       from: socket.auth.username + "@" + config.name,
       to: data.to,
-      rsa: data.data,
+      data: data.data,
       type: "rsa",
     });
     console.log(response); // debug the response for the moment, delete this later

@@ -8,11 +8,7 @@ module.exports = async function (req, res) {
   console.log(data);
 
   // check if the data contain: to, from, data
-  if (
-    !data.to ||
-    !data.from ||
-    (!data.data && (!data.rsa || data.type != "rsa"))
-  ) {
+  if (!data.to || !data.from || !data.data) {
     res.status(400).send({ error: "Invalid data" });
     return;
   }
@@ -26,9 +22,14 @@ module.exports = async function (req, res) {
   if (data.type == "rsa") {
     s.emit("neonet_rsa", {
       from: data.from,
-      rsa: data.rsa,
+      rsa: data.data,
     });
     return;
+  } else if (data.type == "encrypted") {
+    s.emit("neonet_encrypted", {
+      from: data.from,
+      data: data.data,
+    });
   }
 
   // send the data

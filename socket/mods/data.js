@@ -29,10 +29,18 @@ module.exports = async function (socket, data, io) {
   for (const [key, client] of io.sockets.sockets.entries()) {
     if (client.auth.username === data.to) {
       logger.logs(`sending data to ${data.to}`);
-      client.emit("neonet_data", {
-        from: socket.auth.username,
-        data: data.data,
-      });
+      if (data.type === "encrypted") {
+        client.emit("neonet_encrypted", {
+          from: socket.auth.username,
+          data: data.data,
+        });
+      } else {
+        client.emit("neonet_data", {
+          from: socket.auth.username,
+          data: data.data,
+        });
+      }
+
       socket.emit("neonet", {
         from: socket.auth.username,
         to: data.to,
@@ -61,11 +69,15 @@ async function localDataTransfer(socket, data, io) {
   const available = await Peers.checkPeersAvailability("http://" + remote);
   if (available) {
     // send the data to the remote server
-    await Peers.sendData("http://" + remote, {
+    let param = {
       from: socket.auth.username + "@" + config.name,
       to: data.to,
       data: data.data,
-    })
+    };
+    if (data.type === "encrypted") {
+      param.type = data.type;
+    }
+    await Peers.sendData("http://" + remote, param)
       .then((response) => {
         socket.emit("neonet", {
           from: socket.auth.username,

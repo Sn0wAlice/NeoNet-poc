@@ -22,6 +22,10 @@ class RegistreRsa {
     return Object.keys(registreRsa);
   }
 
+  hasKey(id) {
+    return registreRsa[id] !== undefined;
+  }
+
   // Add or update a public key to the registry bind to the owner name
   addRsa(id, rsa) {
     registreRsa[id] = rsa;
@@ -39,12 +43,25 @@ class RegistreRsa {
 
   // UnCypher the date with my own private key
   unCypher(data) {
-    return encryptRsa.decryptStringWithRsaPrivateKey(data, this.privateKey);
+    try {
+      return [
+        true,
+        encryptRsa.decryptStringWithRsaPrivateKey({
+          text: data,
+          privateKey: this.privateKey,
+        }),
+      ];
+    } catch (err) {
+      return [false, err];
+    }
   }
 
   // Cypher the data with the public key of the user bind to the id
-  cypher(data, id) {
-    return encryptRsa.encryptStringWithRsaPublicKey(data, registreRsa[id]);
+  cypher(id, data) {
+    return encryptRsa.encryptStringWithRsaPublicKey({
+      text: data,
+      publicKey: registreRsa[id],
+    });
   }
 }
 
