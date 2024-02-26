@@ -26,6 +26,10 @@ class RegistreRsa {
     return registreRsa[id] !== undefined;
   }
 
+  keyMatch(id, rsa) {
+    return registreRsa[id] === rsa;
+  }
+
   // Add or update a public key to the registry bind to the owner name
   addRsa(id, rsa) {
     registreRsa[id] = rsa;
