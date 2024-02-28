@@ -19,6 +19,18 @@ module.exports = async function (req, res) {
     res.status(400).send({ error: "User not found" });
     return;
   }
+  if (data.type == "rsa") {
+    s.emit("neonet_rsa", {
+      from: data.from,
+      rsa: data.data,
+    });
+    return;
+  } else if (data.type == "encrypted") {
+    s.emit("neonet_encrypted", {
+      from: data.from,
+      data: data.data,
+    });
+  }
 
   // send the data
   s.emit("neonet_data", data);

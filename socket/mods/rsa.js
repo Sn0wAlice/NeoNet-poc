@@ -14,7 +14,7 @@ const config = require(process.argv.includes("--config")
  */
 module.exports = async function (socket, data, io) {
   // check if the data contain: username, data
-  if (!data.to || !data.data) {
+  if (!data.to || !data.rsa) {
     socket.emit("neonet", { error: "Invalid data" });
     return;
   }
@@ -25,37 +25,16 @@ module.exports = async function (socket, data, io) {
     await localDataTransfer(socket, data, io);
     return;
   }
-  let found = false;
+
   for (const [key, client] of io.sockets.sockets.entries()) {
     if (client.auth.username === data.to) {
       logger.logs(`sending data to ${data.to}`);
-      if (data.type === "encrypted") {
-        client.emit("neonet_encrypted", {
-          from: socket.auth.username,
-          data: data.data,
-        });
-      } else {
-        client.emit("neonet_data", {
-          from: socket.auth.username,
-          data: data.data,
-        });
-      }
-
-      socket.emit("neonet", {
+      client.emit("neonet_rsa", {
         from: socket.auth.username,
-        to: data.to,
-        status: "sent",
+        rsa: data.rsa,
       });
-      found = true;
       break;
     }
-  }
-  if (!found) {
-    socket.emit("neonet", {
-      from: socket.auth.username,
-      to: data.to,
-      status: "error: user not found",
-    });
   }
 };
 
@@ -69,30 +48,13 @@ async function localDataTransfer(socket, data, io) {
   const available = await Peers.checkPeersAvailability("http://" + remote);
   if (available) {
     // send the data to the remote server
-    let param = {
+    const response = await Peers.sendData("http://" + remote, {
       from: socket.auth.username + "@" + config.name,
       to: data.to,
       data: data.data,
-    };
-    if (data.type === "encrypted") {
-      param.type = data.type;
-    }
-    await Peers.sendData("http://" + remote, param)
-      .then((response) => {
-        socket.emit("neonet", {
-          from: socket.auth.username,
-          to: data.to,
-          status: "sent",
-        });
-        console.log(response); // debug the response for the moment, delete this later
-      })
-      .catch((err) => {
-        socket.emit("neonet", {
-          from: socket.auth.username,
-          to: data.to,
-          status: `error: ${err.data}`,
-        });
-      });
+      type: "rsa",
+    });
+    console.log(response); // debug the response for the moment, delete this later
   }
 
   return;
