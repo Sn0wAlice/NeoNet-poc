@@ -14,6 +14,7 @@ const config = require(process.argv.includes("--config")
  */
 module.exports = async function (socket, data, io) {
   // check if the data contain: username, data
+  console.log(data);
   if (!data.to || !data.data) {
     socket.emit("neonet", { error: "Invalid data" });
     return;
@@ -64,7 +65,7 @@ async function localDataTransfer(socket, data, io) {
   // get the remote server
   const remote = data.to.split("@")[1];
   const user = data.to.split("@")[0];
-
+  console.log(data);
   // check if the remote server is online
   const available = await Peers.checkPeersAvailability("http://" + remote);
   if (available) {
@@ -79,11 +80,20 @@ async function localDataTransfer(socket, data, io) {
     }
     await Peers.sendData("http://" + remote, param)
       .then((response) => {
-        socket.emit("neonet", {
-          from: socket.auth.username,
-          to: data.to,
-          status: "sent",
-        });
+        if (response.status >= 400 && response.status <= 599) {
+          socket.emit("neonet", {
+            from: socket.auth.username,
+            to: data.to,
+            status: `error: ${response.status} => ${response.body}`,
+          });
+        } else {
+          socket.emit("neonet", {
+            from: socket.auth.username,
+            to: data.to,
+            status: "sent",
+          });
+        }
+
         console.log(response); // debug the response for the moment, delete this later
       })
       .catch((err) => {
@@ -92,6 +102,7 @@ async function localDataTransfer(socket, data, io) {
           to: data.to,
           status: `error: ${err.data}`,
         });
+        console.log(data);
       });
   }
 

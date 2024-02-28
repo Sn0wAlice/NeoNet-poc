@@ -32,7 +32,7 @@ class Peers {
    */
   sendData(hostname, data) {
     logger.logs(`Sending data to ${hostname}`);
-    fetch(hostname + "/amnesia/data", {
+    return fetch(hostname + "/amnesia/data", {
       method: "POST",
       headers: {
         "content-type": "application/json",

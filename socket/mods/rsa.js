@@ -14,7 +14,7 @@ const config = require(process.argv.includes("--config")
  */
 module.exports = async function (socket, data, io) {
   // check if the data contain: username, data
-  if (!data.to || !data.rsa) {
+  if (!data.to || !data.data) {
     socket.emit("neonet", { error: "Invalid data" });
     return;
   }
@@ -31,7 +31,7 @@ module.exports = async function (socket, data, io) {
       logger.logs(`sending data to ${data.to}`);
       client.emit("neonet_rsa", {
         from: socket.auth.username,
-        rsa: data.rsa,
+        data: data.data,
       });
       break;
     }
