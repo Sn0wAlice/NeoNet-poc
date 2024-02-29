@@ -22,14 +22,17 @@ module.exports = async function (req, res) {
   if (data.type == "rsa") {
     s.emit("neonet_rsa", {
       from: data.from,
-      rsa: data.data,
+      data: data.data,
     });
+    res.status(201);
     return;
   } else if (data.type == "encrypted") {
     s.emit("neonet_encrypted", {
       from: data.from,
       data: data.data,
     });
+    res.status(201);
+    return;
   }
 
   // send the data

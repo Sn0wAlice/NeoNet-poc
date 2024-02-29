@@ -54,9 +54,9 @@ socket.on("neonet_data", function (data) {
 
 // Event listener for when the rsa is given
 socket.on("neonet_rsa", function (data) {
-  if (!data.from || !data.rsa) return;
-  let alreadyHad = registreRsa.keyMatch(data.from, data.rsa);
-  registreRsa.addRsa(data.from, data.rsa);
+  if (!data.from || !data.data) return;
+  let alreadyHad = registreRsa.keyMatch(data.from, data.data);
+  registreRsa.addRsa(data.from, data.data);
   // if i asked for the rsa key, remove it from the list
   if (registreRsa.isAskedRsa(data.from)) {
     registreRsa.removeAskedRsa(data.from);
@@ -64,7 +64,7 @@ socket.on("neonet_rsa", function (data) {
     // if not i should send my rsa key
     socket.emit("neonet", {
       mod: "rsa",
-      rsa: registreRsa.getPulicKey(),
+      data: registreRsa.getPulicKey(),
       to: data.from,
     });
   }
@@ -87,7 +87,7 @@ socket.on("neonet_encrypted", function (data) {
     registreRsa.addAskedRsa(data.from);
     socket.emit("neonet", {
       mod: "rsa",
-      rsa: registreRsa.getPulicKey(),
+      data: registreRsa.getPulicKey(),
       to: data.from,
     });
     socket.emit("neonet", {
@@ -134,7 +134,7 @@ async function main() {
       registreRsa.addAskedRsa(args[1]);
       socket.emit("neonet", {
         mod: "rsa",
-        rsa: registreRsa.getPulicKey(),
+        data: registreRsa.getPulicKey(),
         to: args[1],
       });
     } else if (args[0] === "list_user") {
