@@ -37,4 +37,5 @@ module.exports = async function (req, res) {
 
   // send the data
   s.emit("neonet_data", data);
+  res.status(201);
 };
